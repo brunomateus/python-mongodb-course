@@ -20,55 +20,43 @@ def do_it():
     print "Homework3-1"
 
     query = {}
-    projection = {'_id': 0, 'scores.type': 0}
+    projection = {}
 
     try:
 
-        cursor = students.find(query, projection).sort([('_id', pymongo.ASCENDING)])
+        cursor = students.find(query).sort([('_id', pymongo.ASCENDING)])
 
 
     except:
         print "Unexpected error:", sys.exc_info()[0]
 
 
-    for doc in cursor:
-        print doc      
-        print "1111111"
-        new_grades = remove_lowest_grade(doc['scores'])
-        update_grades(doc, new_grades)
-        print doc      
+    for student in cursor:
+        print student      
+        new_grades = remove_lowest_homework(student['scores'])
+        update_grades(student, new_grades)
 
 
-def compare(grade1, grade2):
-    if grade1['score'] > grade2['score']:
-        return -1
-    else: 
-        if grade1['score'] == grade2['score']:
-            return 0
-        else:
-            return 1
-
-
-
-def remove_lowest_grade(grades):
-    grades.sort(cmp=compare)   
-    grades.pop()
-    print grades
-    print "22222"
+def remove_lowest_homework(grades):
+    lowest_homework = {'score':1000}
+    
+    for grade in grades:
+		if (grade['type'] == 'homework' and grade['score'] < lowest_homework['score']):
+			lowest_homework=grade
+    grades.remove(lowest_homework)            
     return grades
 
 
 def update_grades(doc, new_grades):
-    try:
-        doc['scores'] = new_grades
-        print "---"
-        print doc
-        print "***"
-        students.save(doc)
+	try:
+		doc['scores'] = new_grades
+		students.save(doc)
+		print doc
+		print "------"
 
-    except:
-        print "Unexpected error:", sys.exc.info()[0]
-        raise
+	except:
+		print "Unexpected error:", sys.exc.info()[0]
+		raise
 
 do_it()
 
